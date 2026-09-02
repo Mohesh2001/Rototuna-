@@ -57,7 +57,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
-          source: ".github/workflows/scripts/deploy.sh"
+          source: "scripts/deploy.sh"
           target: "/home/ec2-user/deployment"
 
 
