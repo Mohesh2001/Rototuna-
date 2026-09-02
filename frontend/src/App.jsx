@@ -52,7 +52,7 @@ function Auth({ onLogin }) {
     <main className="auth-shell">
       <section className="auth-card">
         <div className="brand-mark">RA</div>
-        <h1>Rototuna Alumni Connect</h1>
+        <h1>Rototuna Alumni Connect......</h1>
         <p className="muted">Connect alumni and preserve school history.</p>
 
         {error && <div className="alert">{error}</div>}
