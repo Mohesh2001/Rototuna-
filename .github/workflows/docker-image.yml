@@ -6,17 +6,22 @@ on:
       - main
 
 jobs:
-
-  build:
+  build-and-deploy:
 
     runs-on: ubuntu-latest
 
     steps:
 
-      - name: Checkout source code
+      # ==========================================
+      # 1. Checkout source code
+      # ==========================================
+      - name: Checkout repository
         uses: actions/checkout@v4
 
 
+      # ==========================================
+      # 2. Login to Docker Hub
+      # ==========================================
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -24,24 +29,48 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
 
+      # ==========================================
+      # 3. Build Docker image
+      # ==========================================
       - name: Build Docker image
         run: |
           docker build \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/rototuna-frontend:latest \
+            -t mohesh2001/rototuna_frontend:latest \
             ./frontend
 
 
+      # ==========================================
+      # 4. Push Docker image to Docker Hub
+      # ==========================================
       - name: Push Docker image
         run: |
-          docker push \
-            ${{ secrets.DOCKERHUB_USERNAME }}/rototuna-frontend:latest
+          docker push mohesh2001/rototuna_frontend:latest
 
 
+      # ==========================================
+      # 5. Copy deploy.sh to EC2
+      # ==========================================
+      - name: Copy deploy script to EC2
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "scripts/deploy.sh"
+          target: "/home/ec2-user/deployment"
+
+
+      # ==========================================
+      # 6. Execute deployment on EC2
+      # ==========================================
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ vars.EC2_HOST }}
+          host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
           script: |
-            /home/ec2-user/deployment/deploy.sh
+            chmod +x /home/ec2-user/deployment/scripts/deploy.sh
+            /home/ec2-user/deployment/scripts/deploy.sh
